@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
-require('./models/dbConfig')
+require('./models/dbConfig');
+const gamesRoutes = require('./routes/controller');
 
-app.listen(5500, () => console.log('Servver started: 5050'));
+app.use('/', gamesRoutes);
+
+app.listen(5500, () => console.log('Servver started: 5500'));
