@@ -1,0 +1,23 @@
+{
+  "name": "free-games-api",
+  "version": "1.0.0",
+  "description": "free games",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+    },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tidic84/free-games-api.git"
+  },
+  "keywords": [
+    "free",
+    "games"
+  ],
+  "author": "Tidic&LiquorLips",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tidic84/free-games-api/issues"
+  },
+  "homepage": "https://github.com/tidic84/free-games-api#readme"
+}
