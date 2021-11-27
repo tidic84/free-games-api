@@ -5,9 +5,8 @@ const { GamesModel } = require('../models/gamesModel');
 
 router.get('/', (req, res) => {
     GamesModel.find((err, games) => {
-        if (err) return console.log("Error");
-        console.log(games);
-        // res.send(games);
+        if (err) return console.log("Error to get data !");
+        res.send(games);
     })
 });
     
