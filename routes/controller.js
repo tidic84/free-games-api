@@ -22,21 +22,35 @@ router.post('/', (req, res) => {
 })
 
 router.put("/:id", (req, res) => {
-    if(ObjectID.isValid(req.params.id)) 
-        return res.status(400).send("ID Unknow: " +req.params.id)
+    if (!ObjectID.isValid(req.params.id))
+        return res.status(400).send("ID unknow : " + req.params.id)
+    
     const updateRecord = {
-        game: req.body.game,
-        platform: req.body.platform
+        author: req.body.author,
+        message: req.body.message
     };
+  
     GamesModel.findByIdAndUpdate(
         req.params.id,
         { $set: updateRecord},
-        { new: true},
-        ( err, docs) => {
-            if (!res) res.send(docs);
-            else console.log("Error: updating data: " + err)
+        { new: true },
+        (err, docs) => {
+            if (!err) res.send(docs);
+            else console.log("Update error : " + err);
         }
     )
-})
+});
+
+router.delete("/:id", (req, res) => {
+    if (!ObjectID.isValid(req.params.id))
+      return res.status(400).send("ID unknow : " + req.params.id)
+    
+      GamesModel.findByIdAndRemove(
+      req.params.id,
+      (err, docs) => {
+        if (!err) res.send(docs);
+        else console.log("Delete error : " + err);
+      })
+  });
 
 module.exports = router;
