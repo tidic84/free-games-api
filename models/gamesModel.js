@@ -7,7 +7,7 @@ const GamesModel = mongoose.model(
             type: String,
             required: true
         },
-        plateform: {
+        platform: {
             type: String,
             required: true
         },
