@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 require('./models/dbConfig');
+require('./fetch')
 const gamesRoutes = require('./routes/controller');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
