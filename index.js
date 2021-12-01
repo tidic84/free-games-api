@@ -2,8 +2,8 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 require('./models/dbConfig');
-require('./fetch')
-const gamesRoutes = require('./routes/controller');
+require('./fetch/discountedGames')
+const gamesRoutes = require('./routes/FreeGamesController');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.use(cors());
 app.get('/', function(req, res) {
     var options = { root: path.join(__dirname) };
-    res.sendFile('./index.html', options);
+    res.sendFile('./index/index.html', options);
 });
 app.use('/games', gamesRoutes);
 

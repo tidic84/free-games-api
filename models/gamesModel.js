@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const GamesModel = mongoose.model(
+const FreeGamesModel = mongoose.model(
     'free-games-api',
     {
         game: {
@@ -11,16 +11,46 @@ const GamesModel = mongoose.model(
             type: String,
             required: true
         },
-        // link: {
-        //     type: String,
-        //     required: true
-        // },
-        // expiryDate: {
-        //     type: Date,
-        //     required: true
-        // }
+        gameId:{
+            type: String,
+            required: true
+        },
+        discount_expiration: {
+            type: String,
+            required: true
+        }
     },
     'free-games'
 );
+const DiscountedGamesModel = mongoose.model(
+    'discounted-games-api',
+    {
+        game: {
+            type: String,
+            required: true
+        },
+        platform: {
+            type: String,
+            required: true
+        },
+        gameId:{
+            type: String,
+            required: true
+        },
+        discount_expiration: {
+            type: String,
+            required: true
+        },
+        discount_percent: {
+            type: String,
+            required: true
+        },
+        price: {
+            type: String,
+            required: true
+        }
+    },
+    'discounted-games'
+);
 
-module.exports = { GamesModel };
+module.exports = { FreeGamesModel, DiscountedGamesModel };
