@@ -4,43 +4,48 @@ const ObjectID = require('mongoose').Types.ObjectId;
 const { FreeGamesModel, DiscountedGamesModel } = require('../models/gamesModel');
 const discountedSteamGames = require('../fetch/discountedGames');
 
-// function getDiscountedGames(req, res) {
-//     discountedSteamGames().then(async game => {
-//         // console.log(games);
-//         for (let i = 0; i < game.length; i++) {
-//             const newRecord = new DiscountedGamesModel({
-//                 game: game[i].game,
-//                 platform: game[i].platform,
-//                 gameId: game[i].gameId,
-//                 discount_expiration: game[i].discount_expiration,
-//                 discount_percent: game[i].discount_percent,
-//                 price: game[i].price
-//             })//.then(async (result) => {res.send(result)});
-//             // console.log(newRecord);
+async function getDiscountedGames(req, res) {
+    const discountedGames = await discountedSteamGames();
+    var newRecord = "";
+    var gameList = [];
+    discountedGames.forEach(async (game) => {
+        newRecord = new DiscountedGamesModel({
+            game: game.game,
+            platform: game.platform,
+            gameId: game.gameId,
+            discount_expiration: game.discount_expiration,
+            discount_percent: game.discount_percent,
+            price: game.price
+        })
+        var dGame = "";
+        await newRecord.save((err, games) => {
+            if (err) return console.log("Error: creating new data: " + err);  
+            else dGame = games;
+            //console.log(gameList);
+            console.log("1")
+        })
 
+        console.log(dGame);
+        gameList.push(dGame);
+        //console.log(gameList);
+        console.log("2")
 
-//             // ### C'est ici le problème ###
-//             await newRecord.save((err, games) => {
-//                 console.log(game[i].game);
-//                 if (!err) return res.send(games)
-//                 else console.log("Error: creating new data: " + err)
-//             });
-//         }
-//     })
-// }
+        return gameList;
+    })
+}
 
 router.get('/', async (req, res) => {
-    
     DiscountedGamesModel.deleteMany({}, (err) => {
         if (err) console.log(err);
     });
-    getDiscountedGames(req, res);
     
-    
-    DiscountedGamesModel.find((err, games) => {
-        if (err) return console.log("Error to get data !");
-        res.send(games);
-    })
+    gameList = await getDiscountedGames(req, res);
+    console.log(gameList);
+    res.send(gameList)
+    //DiscountedGamesModel.find((err, games) => {
+    //    if (err) return console.log("Error to get data !");
+    //    res.send(games);
+    //})
 });
     
 // router.post('/', (req, res) => {
