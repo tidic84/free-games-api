@@ -1,10 +1,32 @@
+<!DOCTYPE html>
 <html>
+    <head>
+      <meta charset="UTF-8">
+        <title>Free Games API</title>
+        <link rel="stylesheet" href="index.css">
+    </head>
     <body>
-        <h1><strong>Free-Games-API</strong></h1>
-        <p style="text-align: left;">Cette api vous mettra a disposition tous les jeux gratuit du jour.</p>
-        <p style="text-align: left;">Pour acceder a l'api: /games</p>
-        <button onclick="location.reload();">Refresh</button>
-        <p></p>
-        <img src="http://loremflickr.com/320/240/cat" alt="Random Image" />
+        <div class="container">
+            <div class="card">
+              <div class="content">
+                <h1></h1>
+                <h3>./FGA</h3>
+                <p>Cette api liste tout les jeux gratuits du jour!</p>
+                <a href="./games.html#">Porte d'entrée</a>
+              </div>
+            </div>
+        </div>
+        
+        <!--<button onclick="location.reload();">Refresh</button>
+        <img src="http://loremflickr.com/320/240/cat" alt="Random Image" />-->
+        <script type="text/javascript" src="./tilt.js"></script>
+        <script type="text/javascript">
+                VanillaTilt.init(document.querySelectorAll(".card"), {
+		        max: 25,
+		        speed: 400,
+            glare: true,
+            "max-glare": 0.5,
+	        });
+        </script>
     </body>
 </html>
