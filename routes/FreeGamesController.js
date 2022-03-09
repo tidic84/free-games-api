@@ -17,6 +17,10 @@ function getDiscountedGames(req, res) {
             console.log(discounted_games);
             res.send(discounted_games);
 
+        console.log(dGame);
+        gameList.push(dGame);
+        //console.log(gameList);
+        console.log("2")
 
         }
     })

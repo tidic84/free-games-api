@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;700&display=swap');
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Noto Sans SC', sans-serif;
+    background-image: url('./images/background.webp');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    background-color: #0002;
+    background-blend-mode: multiply;
+    padding: 25px;
+}
+
+:root {
+    --default: #b9b69a;
+    --success: #51be56;
+    --warning: #ffc107;
+    --danger: #ff5722;
+    --primary: #29b6f6;
+}
+
+a:link { 
+ text-decoration:none; 
+} 
+
+.alert {
+    border: 1px outset var(--default);
+    border-left-width: 5px;
+    box-shadow: 0 4px 10px #0004, 0 2px 20px #0008;
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    margin: 15px 0;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    background-image: linear-gradient(45deg, #ffffff2f, #ffffff10);
+    transition-property: opacity, transform;
+    transition: 0.5s ease-in;
+}
+
+.alert.close {
+    opacity: 0;
+    transform: translateY(40px);
+}
+
+.alert>.icon {
+    min-width: 40px;
+    min-height: 40px;
+    background-color: var(--default);
+    display: inline-block;
+    border-radius: 50%;
+    color: #fff;
+    text-align: center;
+}
+
+.alert>.icon>* {
+    line-height: 40px;
+}
+
+.alert>.text {
+    width: 100%;
+    padding: 0 15px;
+    color: #fff;
+}
+
+.alert>.text p{
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.alert>.close{
+    outline: none;
+    border: none;
+    background-color: transparent;
+    font-size: 18px;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+.alert>.close:hover{
+    color: red;
+}
+
+
+/* success alert start */
+.alert-success{
+    border-color: var(--success);
+}
+.alert-success>.icon{
+    background-color: var(--success);
+}
+/* success alert end */
+
+
+/* warning alert start */
+.alert-warning{
+    border-color: var(--warning);
+}
+.alert-warning>.icon{
+    background-color: var(--warning);
+}
+/* warning alert end */
+
+
+/* danger alert start */
+.alert-danger{
+    border-color: var(--danger);
+}
+.alert-danger>.icon{
+    background-color: var(--danger);
+}
+/* danger alert end */
+
+
+/* primary alert start */
+.alert-primary{
+    border-color: var(--primary);
+}
+.alert-primary>.icon{
+    background-color: var(--primary);
+}
+/* primary alert end */
