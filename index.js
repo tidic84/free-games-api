@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
-require('./fetch/discountedGames')
+require('./fetch/getDiscountedGames')
 const gamesRoutes = require('./routes/FreeGamesController');
 const bodyParser = require('body-parser');
 const cors = require('cors');
