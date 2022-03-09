@@ -18,7 +18,7 @@ module.exports = async function () {
             let gameId = String(steamGamesList["specials"]["items"][i]["id"]);
             let platform = "steam"
 
-            if(discounted && discount_percent == 50) {
+            if(discounted && discount_percent >= 50) {
                 games.push({
                     game: gameName,
                     platform: platform,
