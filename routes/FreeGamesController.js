@@ -1,33 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const discountedSteamGames = require('../fetch/discountedGames');
+const getDiscountedGames = require('../fetch/getDiscountedGames');
 
-function getDiscountedGames(req, res) {
-    discountedSteamGames().then(async game => {
-        discounted_games = [];
-        for (let i = 0; i < game.length; i++) {
-            discounted_games.push({
-                game: game[i].game,
-                platform: game[i].platform,
-                gameId: game[i].gameId,
-                discount_expiration: game[i].discount_expiration,
-                discount_percent: game[i].discount_percent,
-                price: game[i].price
-            })
-            console.log(discounted_games);
-            res.send(discounted_games);
+function displayDiscountedGames(req, res) {
+    discount = req.query.discount;
+    mustSame = req.query.mustSame;
+    if (isNaN(discount)) discount = 0;
+    if (mustSame == "true") mustSame = true;
+    if (mustSame == "false") mustSame = false;
+    if (mustSame != true && mustSame != false || mustSame == undefined || discount == 0) mustSame = false;
 
-        console.log(dGame);
-        gameList.push(dGame);
-        //console.log(gameList);
-        console.log("2")
-
-        }
+    getDiscountedGames(discount, mustSame).then(async games => {
+        res.send(games);
     })
 }
 
 router.get('/', async (req, res) => {
-    getDiscountedGames(req, res);
+    displayDiscountedGames(req, res);
 });
     
 module.exports = router;
