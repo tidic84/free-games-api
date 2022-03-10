@@ -4,24 +4,23 @@ var crawler = egsCrawler.Crawler;
 
 module.exports = async function (discount, mustSame = false) {
     let settings = { method: "Get" };
-    let url = {
-        steam: "https://store.steampowered.com/api/featuredcategories",
-        epic: "https://www.epicgames.com/store/api/featured",
-    };
+    let steam_url = "https://store.steampowered.com/api/featuredcategories";
+
     let games = [];
 
-    await fetchSteamGames(games, url, settings, discount, mustSame);
-    await fetchEpicGames(games, url, settings, discount, mustSame);
-    // console.log(games)
+    await fetchSteamGames(games, steam_url, settings, discount, mustSame);
+    await fetchEpicGames(games, settings, discount, mustSame);
     return games;
 }
 
-async function fetchSteamGames(games, url, settings, discount, mustSame) {
+async function fetchSteamGames(games, steam_url, settings, discount, mustSame) {
+    console.log("Fetching steam games...");
     let gamesList = "";
 
-    await fetch(url.steam, settings)
+    await fetch(steam_url, settings)
         .then(res => res.json())
         .then(json => { gamesList = json })
+
     for (let i = 0; i < gamesList["specials"]["items"].length; i++) {
 
         let gameName = String(gamesList["specials"]["items"][i]["name"]);
@@ -57,23 +56,44 @@ async function fetchSteamGames(games, url, settings, discount, mustSame) {
     }
 }
 
-async function fetchEpicGames(games, url, settings, discount, mustSame) {
-    let gamesList = await crawler.getItems({
+async function fetchEpicGames(games, settings, discount, mustSame) {
+    console.log("Fetching epic games...");
+    let gamesList = "";
+    if (discount == 'free' || discount == "100" || discount == 100) {
+        gamesList = await crawler.getFreeGames({
+            allowCountries: 'FR',
+            country: 'FR',
+            locale: 'fr'
+        });
+        gamesList = gamesList.Catalog.searchStore.elements
+        // console.log(gamesList)
+        for (i in gamesList) {
+            if(gamesList[i].price.totalPrice.discountPrice == 0 && gamesList[i].price.totalPrice.discount != 0) {
+                games.push({
+                    game: gamesList[i].title,
+                    platform: "epic",
+                    gameId: gamesList[i].id,
+                    discount_percent: `${100}`,
+                    price: `${gamesList[i].price.totalPrice.discountPrice}`
+                })
+            }
+        }
+        return
+    }
+
+    gamesList = await crawler.getItems({
         allowedCountries: 'FR',
         category: 'games/edition/base|bundle/games|editors',
         count: 1000,
         country: 'FR',
         locale: 'fr'
     });
-
-    // gamesList = gamesList.items;
     if (mustSame) {
         for (i = 0; i < gamesList.Catalog.searchStore.elements.length; i++) {
             discount_percent =(parseInt(gamesList.Catalog.searchStore.elements[i].price.totalPrice.discount) / parseInt(gamesList.Catalog.searchStore.elements[i].price.totalPrice.originalPrice) * 100).toFixed(0);
             if (gamesList.Catalog.searchStore.elements[i].price.totalPrice.discount > 0 && discount_percent == discount) {
                 discount_expiration = new Date(gamesList.Catalog.searchStore.elements[i].promotions.promotionalOffers[0].promotionalOffers[0].endDate).getTime();
                 
-                // console.log();
                 games.push({
                     game: gamesList.Catalog.searchStore.elements[i].title,
                     platform: "epic",
@@ -90,14 +110,13 @@ async function fetchEpicGames(games, url, settings, discount, mustSame) {
             if (gamesList.Catalog.searchStore.elements[i].price.totalPrice.discount > 0 && discount_percent >= discount) {
                 discount_expiration = new Date(gamesList.Catalog.searchStore.elements[i].promotions.promotionalOffers[0].promotionalOffers[0].endDate).getTime();
                 
-                // console.log();
                 games.push({
                     game: gamesList.Catalog.searchStore.elements[i].title,
                     platform: "epic",
                     gameId: gamesList.Catalog.searchStore.elements[i].id,
                     discount_expiration: discount_expiration,
                     discount_percent: discount_percent,
-                    price: gamesList.Catalog.searchStore.elements[i].price.totalPrice.discountPrice
+                    price: `${gamesList.Catalog.searchStore.elements[i].price.totalPrice.discountPrice}`
                 })
             }
         }
