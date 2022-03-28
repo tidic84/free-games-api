@@ -26,9 +26,9 @@ function API(){
                     
                     <ul class="space-y-8"> {/* GAME COL */}
             
-                        <li class="text-sm leading-6">
+                        <li id="API" class="text-sm leading-6">
                           <figure class="relative flex flex-col-reverse bg-slate-50 rounded-lg p-6 dark:bg-slate-800 dark:highlight-white/5">
-                            <blockquote id="firstgame" class="mt-6 text-slate-700 dark:text-slate-300">Please, hit the 'show' button</blockquote>
+                            <blockquote id="firstgame" class="mt-6 text-slate-700 dark:text-slate-300">Please, hit the 'refresh list' button and wait about 5seconds(depends on your connection) !!DON'T SPAM!!</blockquote>
                             <figcaption class="flex items-center space-x-4">
                               <div class="flex-auto">
                                 <div class="text-base text-slate-900 font-semibold dark:text-slate-300">Top discounted games !</div>
@@ -38,11 +38,13 @@ function API(){
                           </figure>
                         </li>
                     </ul>
-{/*                     <div class="grid grid-cols-1 gap-6 lg:gap-8 sm:grid-cols-2 lg:grid-cols-3 max-h-[33rem] overflow-hidden">
-                      
-            
-                        
-                    </div> */}
+
+
+
+
+
+
+
                 </div>
 
                 )}

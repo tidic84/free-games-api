@@ -1,8 +1,8 @@
 import Navbar from "./Navbar";
 import Title from "./Title";
 import API from "./API";
-import Axios from 'axios';
-import { useState } from "react";
+import SearchG from "./searchG";
+
 
 function App() {
 
@@ -16,6 +16,8 @@ function App() {
       <Title/>
       
       <API/>
+
+      <SearchG/>
       
     </div>
   );
