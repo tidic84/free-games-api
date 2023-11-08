@@ -22,14 +22,17 @@
   "homepage": "https://github.com/tidic84/free-games-api#readme",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
+    "epic-free-games": "^4.0.2",
     "epic-games-store-crawler": "^0.2.1",
     "express": "^4.17.1",
     "get-json": "^1.0.1",
     "node-fetch": "^2.6.6",
     "nodemon": "^2.0.15",
     "npm": "^8.1.4",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "steamapi": "^2.2.0"
   }
 }

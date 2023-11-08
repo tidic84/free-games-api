@@ -1,124 +1,57 @@
 const fetch = require('node-fetch');
 var egsCrawler = require('epic-games-store-crawler');
 var crawler = egsCrawler.Crawler;
+const STEAM_API_KEY = '79F267CAA9E32FC09113E65B6D76DD4A';
+const cheerio = require('cheerio');
 
 module.exports = async function (discount, mustSame = false) {
-    let settings = { method: "Get" };
-    let steam_url = "https://store.steampowered.com/api/featuredcategories";
-
     let games = [];
-
-    await fetchSteamGames(games, steam_url, settings, discount, mustSame);
-    await fetchEpicGames(games, settings, discount, mustSame);
+    await fetchEpicGames(games);
+    await fetchSteamGames(games);
     return games;
 }
 
-async function fetchSteamGames(games, steam_url, settings, discount, mustSame) {
-    console.log("Fetching steam games...");
-    let gamesList = "";
+async function fetchEpicGames(games) {
+    // console.log("Fetching epic games...");    
+    // let gamesList = await crawler.getItems({
+    //     allowCountries: 'FR',
+    //     country: 'FR',
+    //     locale: 'fr',
+    //     count: 999,
+    //     category: 'games/edition/base|bundle/games|editors',
 
-    await fetch(steam_url, settings)
-        .then(res => res.json())
-        .then(json => { gamesList = json })
-
-    for (let i = 0; i < gamesList["specials"]["items"].length; i++) {
-
-        let gameName = String(gamesList["specials"]["items"][i]["name"]);
-        let discount_percent = String(gamesList["specials"]["items"][i]["discount_percent"]);
-        let discounted = String(gamesList["specials"]["items"][i]["discounted"]);
-        let discount_expiration = String(gamesList["specials"]["items"][i]["discount_expiration"]);
-        let price = String(gamesList["specials"]["items"][i]["final_price"]);
-        let gameId = String(gamesList["specials"]["items"][i]["id"]);
-        let platform = "steam"
-        if (mustSame) {
-            if(discounted && discount_percent == discount) {
-                games.push({
-                    game: gameName,
-                    platform: platform,
-                    gameId: gameId,
-                    discount_expiration: discount_expiration,
-                    discount_percent: discount_percent,
-                    price: price
-                })
-            }
-        } else {
-            if(discounted && discount_percent >= discount) {
-                games.push({
-                    game: gameName,
-                    platform: platform,
-                    gameId: gameId,
-                    discount_expiration: discount_expiration,
-                    discount_percent: discount_percent,
-                    price: price
-                })
-            }
-        }
-    }
+    // });
+    // for (i = 0; i < gamesList.Catalog.searchStore.elements.length; i++){
+    //     if (gamesList.Catalog.searchStore.elements[i].title == "Mystery Game") continue;
+    //     if (gamesList.Catalog.searchStore.elements[i].price.totalPrice.discountPrice == gamesList.Catalog.searchStore.elements[i].price.totalPrice.originalPrice) continue;
+    //     games.push({
+    //         game: gamesList.Catalog.searchStore.elements[i].title,
+    //         platform: "epic",
+    //         gameId: gamesList.Catalog.searchStore.elements[i].id,
+    //         discountPrice: gamesList.Catalog.searchStore.elements[i].price.totalPrice.discountPrice,
+    //         originalPrice: gamesList.Catalog.searchStore.elements[i].price.totalPrice.originalPrice,
+    //     })
+    //     console.log(gamesList.Catalog.searchStore.elements[i].price);
+    // }
 }
 
-async function fetchEpicGames(games, settings, discount, mustSame) {
-    console.log("Fetching epic games...");
-    let gamesList = "";
-    if (discount == 'free' || discount == "100" || discount == 100) {
-        gamesList = await crawler.getFreeGames({
-            allowCountries: 'FR',
-            country: 'FR',
-            locale: 'fr'
-        });
-        gamesList = gamesList.Catalog.searchStore.elements
-        // console.log(gamesList)
-        for (i in gamesList) {
-            if(gamesList[i].price.totalPrice.discountPrice == 0 && gamesList[i].price.totalPrice.discount != 0) {
-                games.push({
-                    game: gamesList[i].title,
-                    platform: "epic",
-                    gameId: gamesList[i].id,
-                    discount_percent: `${100}`,
-                    price: `${gamesList[i].price.totalPrice.discountPrice}`
-                })
-            }
-        }
-        return
-    }
+async function fetchSteamGames(games) {
+    // console.log("Fetching Steam games...");
 
-    gamesList = await crawler.getItems({
-        allowedCountries: 'FR',
-        category: 'games/edition/base|bundle/games|editors',
-        count: 1000,
-        country: 'FR',
-        locale: 'fr'
-    });
-    if (mustSame) {
-        for (i = 0; i < gamesList.Catalog.searchStore.elements.length; i++) {
-            discount_percent =(parseInt(gamesList.Catalog.searchStore.elements[i].price.totalPrice.discount) / parseInt(gamesList.Catalog.searchStore.elements[i].price.totalPrice.originalPrice) * 100).toFixed(0);
-            if (gamesList.Catalog.searchStore.elements[i].price.totalPrice.discount > 0 && discount_percent == discount) {
-                discount_expiration = new Date(gamesList.Catalog.searchStore.elements[i].promotions.promotionalOffers[0].promotionalOffers[0].endDate).getTime();
-                
-                games.push({
-                    game: gamesList.Catalog.searchStore.elements[i].title,
-                    platform: "epic",
-                    gameId: gamesList.Catalog.searchStore.elements[i].id,
-                    discount_expiration: discount_expiration,
-                    discount_percent: discount_percent,
-                    price: gamesList.Catalog.searchStore.elements[i].price.totalPrice.discountPrice
-                })
-            }
-        }
-    } else {
-        for (i = 0; i < gamesList.Catalog.searchStore.elements.length; i++) {
-            discount_percent =(parseInt(gamesList.Catalog.searchStore.elements[i].price.totalPrice.discount) / parseInt(gamesList.Catalog.searchStore.elements[i].price.totalPrice.originalPrice) * 100).toFixed(0);
-            if (gamesList.Catalog.searchStore.elements[i].price.totalPrice.discount > 0 && discount_percent >= discount) {
-                discount_expiration = new Date(gamesList.Catalog.searchStore.elements[i].promotions.promotionalOffers[0].promotionalOffers[0].endDate).getTime();
-                
-                games.push({
-                    game: gamesList.Catalog.searchStore.elements[i].title,
-                    platform: "epic",
-                    gameId: gamesList.Catalog.searchStore.elements[i].id,
-                    discount_expiration: discount_expiration,
-                    discount_percent: discount_percent,
-                    price: `${gamesList.Catalog.searchStore.elements[i].price.totalPrice.discountPrice}`
-                })
-            }
-        }
-    }
+    // const response = await fetch('https://steamdb.info/upcoming/free/');
+    // const html = await response.text();
+    // console.log(html)
+    // const $ = cheerio.load(html);
+
+    // console.log($('tr.app').length); // Debug: Affiche le nombre d'éléments trouvés avec le sélecteur
+    // $('tr[data-appid]').each((index, element) => {
+    //     const appId = $(element).attr('data-appid');
+    //     const gameName = $(element).find('.appname').text().trim();
+
+    //     games.push({
+    //         game: gameName,
+    //         platform: "steam",
+    //         gameId: appId,
+    //     });
+    // });
 }

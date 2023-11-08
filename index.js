@@ -13,7 +13,7 @@ app.use(cors());
 // var options = { root: path.join(__dirname) };
 
 app.use('/games', gamesRoutes);
-app.use(express.static("public"));
+app.use('/',express.static("public"));
 
 app.get('*', function(req, res){
     res.status(404).send('Not Found !!!!!!!!  err 404');
