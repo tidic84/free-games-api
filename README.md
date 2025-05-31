@@ -7,15 +7,11 @@
 
 **API moderne et interface web pour découvrir les meilleures promotions gaming** sur Epic Games, Steam et GOG.
 
-![Demo](https://img.shields.io/badge/🎯-Promotions%20en%20temps%20réel-blueviolet?style=flat-square)
-![Demo](https://img.shields.io/badge/🎨-Interface%20moderne-ff69b4?style=flat-square)
-![Demo](https://img.shields.io/badge/📱-Responsive%20design-orange?style=flat-square)
-
 ## ⚡ Démarrage Rapide
 
 ```bash
 # Installation
-git clone <repository-url>
+git clone https://github.com/tidic84/free-games-api
 cd free-games-api
 npm install
 
@@ -29,17 +25,15 @@ npm start
 ## 🎯 Fonctionnalités Principales
 
 ### 🏪 Plateformes Supportées
-| Plateforme | Gratuits | Promotions | Images |
-|------------|----------|------------|--------|
-| ![Epic](https://img.shields.io/badge/Epic%20Games-0078D4?style=flat&logo=epicgames&logoColor=white) | ✅ | ✅ | ✅ |
-| ![Steam](https://img.shields.io/badge/Steam-000000?style=flat&logo=steam&logoColor=white) | ✅ | ✅ | ✅ |
-| ![GOG](https://img.shields.io/badge/GOG-86328A?style=flat&logo=gog.com&logoColor=white) | ✅ | ✅ | ✅ |
+
+![Epic](https://img.shields.io/badge/Epic%20Games-0078D4?style=flat&logo=epicgames&logoColor=white)
+![Steam](https://img.shields.io/badge/Steam-000000?style=flat&logo=steam&logoColor=white)
+![GOG](https://img.shields.io/badge/GOG-86328A?style=flat&logo=gog.com&logoColor=white)
 
 ### 🎨 Interface Moderne
 - 🌙 **Design sombre** avec thème violet/bleu
 - 📱 **Responsive** - optimisé mobile
 - ⚡ **Filtrage temps réel** par plateforme et réduction
-- 🎯 **Tri intelligent** par réduction décroissante
 - 💎 **Cartes élégantes** avec prix et économies
 
 ## 📊 API Endpoints
@@ -124,14 +118,6 @@ pm2 start index.js --name "free-games-api"
 - 📱 **Images optimisées** avec fallbacks
 - 🎯 **Filtrage côté client** pour réactivité
 
-## 🤝 Contribution
-
-1. **Fork** le projet
-2. **Branch** feature (`git checkout -b feature/amazing`)
-3. **Commit** (`git commit -m 'Add amazing feature'`)
-4. **Push** (`git push origin feature/amazing`)
-5. **Pull Request**
-
 ## 📄 License
 
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
@@ -142,6 +128,6 @@ pm2 start index.js --name "free-games-api"
 
 **[🌟 Star ce projet](../../stargazers)** • **[🐛 Report Bug](../../issues)** • **[💡 Request Feature](../../issues)**
 
-Made with ❤️ for gamers by gamers
+Made with ❤️
 
 </div>
