@@ -224,34 +224,139 @@ function createPlaceholderSVG(title) {
   `)}`;
 }
 
-// Fonction pour formater le prix
+// Fonction pour formater le prix - correction majeure
 function formatPrice(price) {
   if (!price || price === 0) return 'Gratuit';
   
-  // Convertir en nombre et nettoyer
-  let numPrice = typeof price === 'string' ? parseFloat(price.replace(/[^0-9.]/g, '')) : price;
+  let numPrice;
   
-  // Gérer les prix en centimes (Steam API renvoie parfois en centimes)
-  if (numPrice > 1000) {
-    numPrice = numPrice / 100;
+  // Si c'est déjà un nombre
+  if (typeof price === 'number') {
+    numPrice = price;
+  } else {
+    // Si c'est une chaîne, nettoyer et convertir
+    const cleanPrice = price.toString().replace(/[^0-9.,]/g, '').replace(',', '.');
+    numPrice = parseFloat(cleanPrice);
   }
   
-  // Détecter la devise
-  if (price.toString().includes('$')) {
+  // Ne pas diviser par 100 automatiquement - laisser le prix tel quel
+  // Car les prix semblent déjà être dans la bonne unité
+  
+  // Détecter la devise selon le format original
+  const originalString = price.toString();
+  if (originalString.includes('$') || originalString.includes('USD')) {
     return `${numPrice.toFixed(2)}$`;
+  } else if (originalString.includes('€') || originalString.includes('EUR')) {
+    return `${numPrice.toFixed(2)}€`;
+  } else if (originalString.includes('£') || originalString.includes('GBP')) {
+    return `£${numPrice.toFixed(2)}`;
   } else {
+    // Par défaut, utiliser l'euro
     return `${numPrice.toFixed(2)}€`;
   }
 }
 
-// Fonction pour obtenir l'icône de la plateforme
-function getPlatformIcon(platform) {
-  const icons = {
-    'epic': '<i class="fas fa-shopping-cart"></i> Epic',
-    'steam': '<i class="fab fa-steam"></i> Steam',
-    'gog': '<i class="fas fa-compact-disc"></i> GOG'
-  };
-  return icons[platform] || platform;
+// Fonction pour créer une carte de jeu - correction finale de la gestion des prix
+function createGameCard(game) {
+  // Vérifier et nettoyer les données du jeu selon l'API
+  const title = game.game || game.title || game.name || 'Jeu sans nom';
+  const platform = game.platform || 'unknown';
+  const discount = parseInt(game.discountPercent || game.discount || 0);
+  
+  // CORRECTION FINALE: Standardiser la gestion des prix pour toutes les plateformes
+  let currentPrice, originalPrice;
+  
+  // Utiliser la nomenclature standard pour toutes les plateformes
+  currentPrice = parseFloat(game.discountPrice || game.currentPrice || game.price || 0);
+  originalPrice = parseFloat(game.originalPrice || game.regularPrice || game.basePrice || 0);
+  
+  // Log pour debug
+  console.log(`Prix debug pour ${title} (${platform}):`, {
+    discountPrice: game.discountPrice,
+    currentPrice: game.currentPrice,
+    price: game.price,
+    originalPrice: game.originalPrice,
+    regularPrice: game.regularPrice,
+    basePrice: game.basePrice,
+    calculated_current: currentPrice,
+    calculated_original: originalPrice
+  });
+  
+  const gameUrl = game.url || game.link || '#';
+  const gameImage = game.image || game.imageUrl || game.thumbnail || createPlaceholderSVG(title);
+  
+  // Ne pas afficher si pas de promotion
+  if (discount <= 0) {
+    return '';
+  }
+  
+  console.log('Prix finaux pour affichage:', { 
+    title, 
+    platform, 
+    discount, 
+    currentPrice, 
+    originalPrice,
+    formatted_current: formatPrice(currentPrice),
+    formatted_original: formatPrice(originalPrice)
+  });
+  
+  // Badge de réduction
+  const discountBadge = `<div class="discount-badge ${discount === 100 ? 'free' : 'promo'}">${discount === 100 ? 'GRATUIT' : `-${discount}%`}</div>`;
+  
+  // Affichage du prix corrigé
+  let priceDisplay;
+  if (discount === 100) {
+    priceDisplay = '<span class="price free">Gratuit</span>';
+  } else if (originalPrice > 0 && currentPrice >= 0 && originalPrice > currentPrice) {
+    const savings = originalPrice - currentPrice;
+    priceDisplay = `<div class="price-container">
+      <span class="original-price">${formatPrice(originalPrice)}</span>
+      <span class="current-price">${formatPrice(currentPrice)}</span>
+      <span class="savings">Économie: ${formatPrice(savings)}</span>
+    </div>`;
+  } else if (currentPrice > 0) {
+    priceDisplay = `<div class="price-container">
+      <span class="current-price">${formatPrice(currentPrice)}</span>
+      ${discount > 0 ? `<span class="discount-info">-${discount}% de réduction</span>` : ''}
+    </div>`;
+  } else {
+    priceDisplay = '<span class="price unknown">Prix non disponible</span>';
+  }
+  
+  const platformIcon = getPlatformIcon(platform);
+  
+  return `
+    <div class="game-card" onclick="openGameModal('${encodeURIComponent(title)}')">
+      ${discountBadge}
+      <div class="game-image">
+        <img src="${gameImage}" alt="${title}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="image-fallback" style="display:none;">
+          <div class="fallback-content">
+            <div class="game-initials">${getGameInitials(title)}</div>
+            <div class="fallback-icon">🎮</div>
+          </div>
+        </div>
+        <div class="platform-badge">${platformIcon}</div>
+      </div>
+      <div class="game-info">
+        <h3 class="game-title">${title}</h3>
+        <div class="game-meta">
+          ${game.releaseYear ? `<span class="release-year">${game.releaseYear}</span>` : ''}
+          ${game.genre ? `<span class="genre">${game.genre}</span>` : ''}
+          <span class="platform-meta">${platform.toUpperCase()}</span>
+        </div>
+        <div class="game-price">
+          ${priceDisplay}
+        </div>
+        <div class="game-actions">
+          <button class="btn-primary" onclick="event.stopPropagation(); window.open('${gameUrl}', '_blank')">
+            <i class="fas fa-external-link-alt"></i> 
+            ${discount === 100 ? 'Récupérer' : 'Voir l\'offre'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 // Fonction pour modifier le titre de la page dans updateResultsTitle
@@ -283,75 +388,14 @@ function openGameModal(gameId) {
   // TODO: Implémenter l'affichage détaillé du jeu
 }
 
-// Fonction pour créer une carte de jeu - simplifiée
-function createGameCard(game) {
-  // Vérifier et nettoyer les données du jeu selon l'API
-  const title = game.game || game.title || game.name || 'Jeu sans nom';
-  const platform = game.platform || 'unknown';
-  const discount = parseInt(game.discountPercent || game.discount || 0);
-  const currentPrice = parseFloat(game.discountPrice || game.currentPrice || game.price || 0);
-  const originalPrice = parseFloat(game.originalPrice || game.regularPrice || 0);
-  const gameUrl = game.url || game.link || '#';
-  const gameImage = game.image || game.imageUrl || game.thumbnail || createPlaceholderSVG(title);
-  
-  // Ne pas afficher si pas de promotion
-  if (discount <= 0) {
-    return '';
-  }
-  
-  console.log('Création carte promotion:', { title, platform, discount, currentPrice, originalPrice });
-  
-  // Badge de réduction - une seule fois
-  const discountBadge = `<div class="discount-badge ${discount === 100 ? 'free' : 'promo'}">${discount === 100 ? 'GRATUIT' : `-${discount}%`}</div>`;
-  
-  // Affichage du prix simplifié
-  let priceDisplay;
-  if (discount === 100) {
-    priceDisplay = '<span class="price free">Gratuit</span>';
-  } else if (originalPrice > 0 && currentPrice >= 0) {
-    const savings = originalPrice - currentPrice;
-    priceDisplay = `<div class="price-container">
-      <span class="original-price">${formatPrice(originalPrice)}</span>
-      <span class="current-price">${formatPrice(currentPrice)}</span>
-      <span class="savings">Économie: ${formatPrice(savings)}</span>
-    </div>`;
-  } else {
-    priceDisplay = `<span class="current-price">${formatPrice(currentPrice)}</span>`;
-  }
-  
-  const platformIcon = getPlatformIcon(platform);
-  
-  return `
-    <div class="game-card" onclick="openGameModal('${encodeURIComponent(title)}')">
-      ${discountBadge}
-      <div class="game-image">
-        <img src="${gameImage}" alt="${title}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-        <div class="image-fallback" style="display:none;">
-          <div class="fallback-content">
-            <div class="game-initials">${getGameInitials(title)}</div>
-            <div class="fallback-icon">🎮</div>
-          </div>
-        </div>
-        <div class="platform-badge">${platformIcon}</div>
-      </div>
-      <div class="game-info">
-        <h3 class="game-title">${title}</h3>
-        <div class="game-meta">
-          ${game.releaseYear ? `<span class="release-year">${game.releaseYear}</span>` : ''}
-          ${game.genre ? `<span class="genre">${game.genre}</span>` : ''}
-        </div>
-        <div class="game-price">
-          ${priceDisplay}
-        </div>
-        <div class="game-actions">
-          <button class="btn-primary" onclick="event.stopPropagation(); window.open('${gameUrl}', '_blank')">
-            <i class="fas fa-external-link-alt"></i> 
-            ${discount === 100 ? 'Récupérer' : 'Voir l\'offre'}
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
+// Fonction pour obtenir l'icône de la plateforme
+function getPlatformIcon(platform) {
+  const icons = {
+    'epic': '<i class="fas fa-shopping-cart"></i> Epic',
+    'steam': '<i class="fab fa-steam"></i> Steam',
+    'gog': '<i class="fas fa-compact-disc"></i> GOG'
+  };
+  return icons[platform] || `<i class="fas fa-gamepad"></i> ${platform}`;
 }
 
 // Fonctions globales

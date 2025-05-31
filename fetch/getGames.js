@@ -34,68 +34,126 @@ async function fetchEpicGames(games, minDiscount = 0) {
     
     try {
         // 1. D'abord récupérer les jeux gratuits via Epic Free Games
+        console.log('📥 Tentative Epic Free Games API...');
         await epicFreeGames.getGames().then(res => {
-            if (res && res.currentGames) {
+            console.log('Epic Free Games réponse:', res);
+            
+            if (res && res.currentGames && Array.isArray(res.currentGames)) {
+                console.log(`Epic Free Games: ${res.currentGames.length} jeux trouvés`);
+                
                 for (const g of res.currentGames) {
+                    console.log(`Epic analyse: ${g.title}`);
+                    console.log('Prix structure:', JSON.stringify(g.price, null, 2));
+                    
                     const finalPrice = g.price?.totalPrice?.discountPrice || 0;
                     const originalPrice = g.price?.totalPrice?.originalPrice || 0;
-                      if (finalPrice === 0) {
-                        // Pour les jeux gratuits Epic, considérer comme 100% de discount
-                        // même si originalPrice = 0 (jeux offerts sans prix de base défini)
+                    
+                    console.log(`Prix: final=${finalPrice}, original=${originalPrice}`);
+                    
+                    if (finalPrice === 0) {
                         const discount = 100;
-                        const effectiveBasePrice = originalPrice > 0 ? originalPrice : 2999; // Prix fictif pour le calcul
-                          if (discount >= minDiscount) {                        games.push({
-                            game: g.title,
-                            platform: "epic",
-                            gameId: g.id,
-                            discountPrice: 0,
-                            originalPrice: effectiveBasePrice / 100, // Convertir centimes en euros
-                            discountPercent: discount,
-                            url: g.productSlug ? `https://store.epicgames.com/fr/p/${g.productSlug}` : undefined,
-                            image: g.keyImages && g.keyImages.length > 0 ? g.keyImages[0].url : undefined
-                        });
-                            console.log(`✅ Epic gratuit: ${g.title} (${discount}%)`);
+                        const effectiveBasePrice = originalPrice > 0 ? originalPrice : 2999;
+                        
+                        if (discount >= minDiscount) {
+                            games.push({
+                                game: g.title,
+                                platform: "epic",
+                                gameId: g.id,
+                                discountPrice: 0,
+                                originalPrice: effectiveBasePrice / 100,
+                                discountPercent: discount,
+                                url: g.productSlug ? `https://store.epicgames.com/fr/p/${g.productSlug}` : undefined,
+                                image: g.keyImages && g.keyImages.length > 0 ? g.keyImages[0].url : undefined
+                            });
+                            console.log(`✅ Epic gratuit ajouté: ${g.title} (${discount}%)`);
                         }
                     }
                 }
+            } else {
+                console.log('❌ Epic Free Games: structure de réponse inattendue');
             }
+        }).catch(error => {
+            console.error('❌ Epic Free Games API erreur:', error.message);
         });
 
-        // 2. Ensuite récupérer les promotions via le crawler
+        // 2. CORRECTION MAJEURE : Récupérer TOUTES les promotions via le crawler
+        console.log('📥 Tentative Epic Crawler pour toutes les promotions...');
         const gamesList = await crawler.getItems({
             allowCountries: 'FR',
             country: 'FR',
             locale: 'fr',
-            count: 999,
+            count: 1000, // Augmenter pour capturer plus de jeux
             category: 'games/edition/base|bundle/games|editors',
         });
 
+        console.log('Epic Crawler réponse:', gamesList ? 'OK' : 'ERREUR');
+
         if (gamesList && gamesList.Catalog && gamesList.Catalog.searchStore && Array.isArray(gamesList.Catalog.searchStore.elements)) {
+            console.log(`Epic Crawler: ${gamesList.Catalog.searchStore.elements.length} éléments trouvés`);
+            
             for (const el of gamesList.Catalog.searchStore.elements) {
                 if (el.title === "Mystery Game") continue;
                 
-                const basePrice = el.price.totalPrice.originalPrice || 0;
-                const currentPrice = el.price.totalPrice.discountPrice || 0;
-                const discountPercent = basePrice > 0 ? Math.round(100 - (currentPrice / basePrice) * 100) : 0;
+                console.log(`Epic Crawler analyse: ${el.title}`);
+                console.log('Prix structure:', JSON.stringify(el.price, null, 2));
+                
+                const basePrice = el.price?.totalPrice?.originalPrice || 0;
+                const currentPrice = el.price?.totalPrice?.discountPrice || 0;
+                
+                // CORRECTION : Ignorer les jeux avec prix originalPrice = 0 (jeux F2P ou sans prix valide)
+                if (basePrice === 0) {
+                    console.log(`⚠️ Epic ignoré (prix original = 0): ${el.title}`);
+                    continue;
+                }
+                
+                // CORRECTION : Calculer la réduction correctement
+                let discountPercent = 0;
+                if (basePrice > 0) {
+                    if (currentPrice === 0) {
+                        discountPercent = 100; // Gratuit
+                    } else {
+                        discountPercent = Math.round(100 - (currentPrice / basePrice) * 100);
+                    }
+                }
+                
+                console.log(`Prix: base=${basePrice}, current=${currentPrice}, discount=${discountPercent}%`);
+                
+                // CORRECTION : S'assurer qu'il y a vraiment une promotion
+                if (discountPercent <= 0) {
+                    console.log(`⚠️ Epic ignoré (pas de réduction): ${el.title}`);
+                    continue;
+                }
                 
                 // Éviter les doublons avec les jeux gratuits déjà ajoutés
-                const isAlreadyAdded = games.some(g => g.platform === 'epic' && g.gameId === el.id);                  if (!isAlreadyAdded && discountPercent >= minDiscount && discountPercent > 0) {
+                const isAlreadyAdded = games.some(g => g.platform === 'epic' && g.gameId === el.id);
+                
+                // CORRECTION : Inclure TOUTES les promotions >= minDiscount avec prix valides
+                if (!isAlreadyAdded && discountPercent >= minDiscount && basePrice > 0) {
                     games.push({
                         game: el.title,
                         platform: "epic",
                         gameId: el.id,
-                        discountPrice: currentPrice / 100, // Convertir centimes en euros
-                        originalPrice: basePrice / 100, // Convertir centimes en euros
+                        discountPrice: currentPrice / 100,
+                        originalPrice: basePrice / 100,
                         discountPercent: discountPercent,
                         url: el.productSlug ? `https://store.epicgames.com/fr/p/${el.productSlug}` : undefined,
                         image: el.keyImages && el.keyImages.length > 0 ? el.keyImages[0].url : undefined
                     });
-                    console.log(`✅ Epic promo: ${el.title} (-${discountPercent}%) - ${(currentPrice/100).toFixed(2)}€ au lieu de ${(basePrice/100).toFixed(2)}€`);
+                    console.log(`✅ Epic promo ajouté: ${el.title} (-${discountPercent}%) - ${(currentPrice/100).toFixed(2)}€ au lieu de ${(basePrice/100).toFixed(2)}€`);
+                } else if (!isAlreadyAdded && discountPercent > 0) {
+                    console.log(`⚠️ Epic promo ignoré (< ${minDiscount}%): ${el.title} (-${discountPercent}%)`);
                 }
             }
+        } else {
+            console.log('❌ Epic Crawler: structure de réponse inattendue');
         }
+        
+        const epicGamesCount = games.filter(g => g.platform === 'epic').length;
+        console.log(`📊 Epic Games total: ${epicGamesCount} jeux ajoutés`);
+        
     } catch (e) {
-        console.error('❌ Erreur Epic Games:', e.message);
+        console.error('❌ Erreur Epic Games complète:', e.message);
+        console.error('Stack:', e.stack);
     }
 }
 
@@ -172,11 +230,12 @@ async function fetchGOGGames(games, minDiscount = 0) {
                     if (addedGames >= 50) break; // Limite raisonnable
                     
                     if (product.price && product.price.finalMoney && product.price.baseMoney) {
-                        const basePrice = Math.round(parseFloat(product.price.baseMoney.amount) * 100); // Convertir en centimes
-                        const currentPrice = Math.round(parseFloat(product.price.finalMoney.amount) * 100);
+                        // CORRECTION: Utiliser directement les valeurs en euros, pas en centimes
+                        const originalPrice = parseFloat(product.price.baseMoney.amount);
+                        const currentPrice = parseFloat(product.price.finalMoney.amount);
                         
-                        if (basePrice > 0 && currentPrice < basePrice) {
-                            const discountPercent = Math.round(100 - (currentPrice / basePrice) * 100);
+                        if (originalPrice > 0 && currentPrice < originalPrice) {
+                            const discountPercent = Math.round(100 - (currentPrice / originalPrice) * 100);
                             
                             if (discountPercent >= minDiscount && discountPercent > 0) {
                                 const imageUrl = product.coverVertical || product.coverHorizontal || product.screenshots?.[0];
@@ -185,14 +244,15 @@ async function fetchGOGGames(games, minDiscount = 0) {
                                     game: product.title,
                                     platform: "gog",
                                     gameId: product.slug || product.id,
-                                    currentPrice: currentPrice,
-                                    basePrice: basePrice,
+                                    // CORRECTION: Utiliser la nomenclature standard
+                                    discountPrice: currentPrice, // Prix actuel en euros
+                                    originalPrice: originalPrice, // Prix original en euros
                                     discountPercent: discountPercent,
                                     url: `https://www.gog.com/fr/game/${product.slug}`,
                                     image: imageUrl
                                 });
                                 
-                                console.log(`✅ GOG: ${product.title} (-${discountPercent}%)`);
+                                console.log(`✅ GOG: ${product.title} (-${discountPercent}%) - ${currentPrice.toFixed(2)}€ au lieu de ${originalPrice.toFixed(2)}€`);
                                 addedGames++;
                             }
                         }

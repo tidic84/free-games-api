@@ -690,6 +690,21 @@ body {
   box-shadow: 0 4px 15px rgba(81, 207, 102, 0.4);
 }
 
+/* Prix - styles pour les nouvelles classes */
+.discount-info {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 4px;
+  display: block;
+}
+
+.price.unknown {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
 /* Platform Badge */
 .platform-badge {
   position: absolute;

@@ -10,23 +10,34 @@ async function getGames(discount = 0, platforms = ['epic', 'steam', 'gog']) {
     
     let games = [];
     
-    if (discount >= 100) {
-        // Pour les jeux gratuits, utiliser getFreeGames
-        console.log('📥 Utilisation de getFreeGames pour jeux gratuits');
-        games = await getFreeGames();
-    } else {
-        // Pour les promotions, utiliser getDiscountedGames
-        console.log(`📥 Utilisation de getDiscountedGames pour promotions >= ${discount}%`);
-        games = await getDiscountedGames(discount, false);
+    // Utiliser la nouvelle API unifiée au lieu des anciennes méthodes
+    try {
+        const { getGames: getUnifiedGames } = require('../fetch/getGames');
+        games = await getUnifiedGames(discount, platforms);
+        console.log(`📦 API unifiée: ${games.length} jeux récupérés`);
+    } catch (error) {
+        console.error('❌ Erreur API unifiée:', error.message);
+        
+        // Fallback vers les anciennes méthodes
+        if (discount >= 100) {
+            console.log('📥 Fallback vers getFreeGames');
+            const getFreeGames = require('../fetch/getFreeGames');
+            games = await getFreeGames();
+        } else {
+            console.log(`📥 Fallback vers getDiscountedGames (${discount}%)`);
+            const getDiscountedGames = require('../fetch/getDiscountedGames');
+            games = await getDiscountedGames(discount);
+        }
     }
     
-    // Filtrer par plateformes si nécessaire
-    if (platforms.length < 3) {
-        const beforeCount = games.length;
-        games = games.filter(game => platforms.includes(game.platform));
-        console.log(`🔽 Filtrage plateformes: ${beforeCount} → ${games.length} jeux`);
+    // Filtrer selon les plateformes demandées
+    if (platforms && platforms.length > 0) {
+        const filteredGames = games.filter(game => platforms.includes(game.platform));
+        console.log(`🔍 Filtrage plateformes: ${games.length} -> ${filteredGames.length} jeux`);
+        games = filteredGames;
     }
     
+    console.log(`✅ Total final: ${games.length} jeux retournés`);
     return games;
 }
 

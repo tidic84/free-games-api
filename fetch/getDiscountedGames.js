@@ -14,21 +14,36 @@ const GameImageService = require('./gameImageService');
 
 async function fetchEpicGames(games, discount = 0, mustSame = false) {
     try {
+        console.log(`🎮 Epic Games: recherche promotions ${mustSame ? 'exactement' : 'au moins'} ${discount}%`);
+        
         let gamesList = await crawler.getItems({
             allowCountries: 'FR',
             country: 'FR',
             locale: 'fr',
-            count: 999,
+            count: 1000, // Augmenter pour capturer plus de promotions
             category: 'games/edition/base|bundle/games|editors',
         });
+        
         if (gamesList && gamesList.Catalog && gamesList.Catalog.searchStore && Array.isArray(gamesList.Catalog.searchStore.elements)) {
+            console.log(`Epic Crawler: ${gamesList.Catalog.searchStore.elements.length} éléments analysés`);
+            
+            let addedCount = 0;
             for (let i = 0; i < gamesList.Catalog.searchStore.elements.length; i++) {
                 const el = gamesList.Catalog.searchStore.elements[i];
                 if (el.title === "Mystery Game") continue;
 
-                const original = el.price.totalPrice.originalPrice;
-                const discountPrice = el.price.totalPrice.discountPrice;
-                const percent = original > 0 ? Math.round(100 - (discountPrice / original) * 100) : 0;
+                const original = el.price?.totalPrice?.originalPrice || 0;
+                const discountPrice = el.price?.totalPrice?.discountPrice || 0;
+                
+                // CORRECTION : Calculer le pourcentage correctement
+                let percent = 0;
+                if (original > 0) {
+                    if (discountPrice === 0) {
+                        percent = 100;
+                    } else {
+                        percent = Math.round(100 - (discountPrice / original) * 100);
+                    }
+                }
                 
                 // Correction stricte : on filtre selon les critères exacts
                 let shouldInclude = false;
@@ -44,22 +59,26 @@ async function fetchEpicGames(games, discount = 0, mustSame = false) {
                     }
                 }
                 
-                if (shouldInclude) {
+                if (shouldInclude && original > 0) {
                     games.push({
                         game: el.title,
                         platform: "epic",
                         gameId: el.id,
                         discountPercent: percent,
-                        discountPrice: discountPrice / 100, // CORRECTION: convertir centimes en euros
-                        originalPrice: original / 100, // CORRECTION: convertir centimes en euros
+                        discountPrice: discountPrice / 100,
+                        originalPrice: original / 100,
                         url: el.productSlug ? `https://store.epicgames.com/fr/p/${el.productSlug}` : undefined,
                         image: el.keyImages && el.keyImages.length > 0 ? el.keyImages[0].url : undefined
                     });
+                    addedCount++;
+                    console.log(`✅ Epic promo: ${el.title} (-${percent}%) - ${(discountPrice/100).toFixed(2)}€ au lieu de ${(original/100).toFixed(2)}€`);
                 }
             }
+            
+            console.log(`📊 Epic Games: ${addedCount} promotions ajoutées`);
         }
     } catch (e) {
-        console.error('Erreur Epic Games:', e.message);
+        console.error('❌ Erreur Epic Games:', e.message);
     }
 }
 
@@ -143,13 +162,14 @@ async function fetchGOGGames(games, discount = 0, mustSame = false) {
                     try {
                         // Récupérer les prix depuis l'API catalog
                         if (product.price && product.price.finalMoney && product.price.baseMoney) {
+                            // CORRECTION: Utiliser directement les valeurs en euros
                             const originalPrice = parseFloat(product.price.baseMoney.amount);
                             const discountPrice = parseFloat(product.price.finalMoney.amount);
                             
                             if (originalPrice > 0 && discountPrice < originalPrice) {
                                 const percent = Math.round(100 - (discountPrice / originalPrice) * 100);
                                 
-                // Filtrage selon les critères
+                                // Filtrage selon les critères
                                 let shouldInclude = false;
                                 if (mustSame) {
                                     shouldInclude = (percent === discount);
@@ -169,12 +189,12 @@ async function fetchGOGGames(games, discount = 0, mustSame = false) {
                                         platform: "gog",
                                         gameId: product.slug || product.id,
                                         discountPercent: percent,
-                                        discountPrice: discountPrice || 0, // Assurer une valeur numérique
-                                        originalPrice: originalPrice || discountPrice || 0, // Assurer une valeur numérique
+                                        discountPrice: discountPrice, // Prix actuel en euros
+                                        originalPrice: originalPrice, // Prix original en euros
                                         url: `https://www.gog.com/en/game/${product.slug || product.id}`,
                                         image: imageUrl
                                     });
-                                    console.log(`GOG promotion: ${product.title} (-${percent}%) - ${discountPrice || 0}$ au lieu de ${originalPrice || 0}$`);
+                                    console.log(`GOG promotion: ${product.title} (-${percent}%) - ${discountPrice.toFixed(2)}€ au lieu de ${originalPrice.toFixed(2)}€`);
                                     addedGames++;
                                 }
                             }
