@@ -1,10 +1,12 @@
 {
   "name": "free-games-api",
-  "version": "1.0.0",
-  "description": "free games",
+  "version": "2.0.0",
+  "description": "API pour récupérer les jeux gratuits et en promotion depuis Epic Games, Steam et GOG",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"No tests specified\""
   },
   "repository": {
     "type": "git",
@@ -21,18 +23,16 @@
   },
   "homepage": "https://github.com/tidic84/free-games-api#readme",
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.7.7",
+    "body-parser": "^1.20.2",
+    "canvas": "^3.1.0",
+    "cheerio": "^1.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.4.5",
     "epic-free-games": "^4.0.2",
     "epic-games-store-crawler": "^0.2.1",
-    "express": "^4.17.1",
-    "get-json": "^1.0.1",
-    "node-fetch": "^2.6.6",
-    "nodemon": "^2.0.15",
-    "npm": "^8.1.4",
-    "path": "^0.12.7",
-    "steamapi": "^2.2.0"
+    "express": "^4.21.0",
+    "node-fetch": "^2.7.0",
+    "nodemon": "^3.1.7"
   }
 }

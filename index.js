@@ -13,9 +13,10 @@ app.use(cors());
 // var options = { root: path.join(__dirname) };
 
 app.use('/games', gamesRoutes);
+app.use('/api/free-games', gamesRoutes); // Route API moderne pour l'interface
 app.use('/',express.static("public"));
 
 app.get('*', function(req, res){
     res.status(404).send('Not Found !!!!!!!!  err 404');
 });
-app.listen(25565, () => console.log('Server started: 25565'));
+app.listen(3000, () => console.log('Server started: 3000'));

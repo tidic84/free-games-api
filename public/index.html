@@ -1,32 +1,252 @@
 <!DOCTYPE html>
-<html>
-    <head>
-      <meta charset="UTF-8">
-        <title>Free Games API</title>
-        <link rel="stylesheet" href="index.css">
-    </head>
-    <body>
-        <div class="container">
-            <div class="card">
-              <div class="content">
-                <h1></h1>
-                <h3>./FGA</h3>
-                <p>Cette api liste tout les jeux gratuits du jour!</p>
-                <a href="./games.html#">Porte d'entrée</a>
-              </div>
-            </div>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Free Games API - Jeux gratuits et promotions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="API et interface pour découvrir les meilleurs jeux gratuits et en promotion">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="modern-styles.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <i class="fas fa-code"></i>
+        <span>Free Games API</span>
+      </div>
+      <div class="nav-actions">
+        <button class="refresh-btn" onclick="refreshData()" title="Actualiser les données">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+        <div class="cache-status">
+          <span id="cache-indicator" class="cache-fresh">
+            <i class="fas fa-circle"></i> Cache à jour
+          </span>
         </div>
-        
-        <!--<button onclick="location.reload();">Refresh</button>
-        <img src="http://loremflickr.com/320/240/cat" alt="Random Image" />-->
-        <script type="text/javascript" src="./tilt.js"></script>
-        <script type="text/javascript">
-                VanillaTilt.init(document.querySelectorAll(".card"), {
-		        max: 25,
-		        speed: 400,
-            glare: true,
-            "max-glare": 0.5,
-	        });
-        </script>
-    </body>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        <span class="gradient-text">Free Games API</span>
+        promotions gaming
+      </h1>
+      <p class="hero-subtitle">
+        API REST et interface web pour découvrir les meilleures promotions et jeux gratuits
+      </p>
+      <div class="hero-stats" id="hero-stats">
+        <div class="stat-card">
+          <div class="stat-number" id="promoGames">0</div>
+          <div class="stat-label">Jeux en promotion</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="freeGames">0</div>
+          <div class="stat-label">Jeux gratuits</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="platforms-count">3</div>
+          <div class="stat-label">Plateformes</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters Section -->
+  <section class="filters">
+    <div class="filters-container">      <div class="filters-header">
+        <h2><i class="fas fa-filter"></i> Filtres et tri</h2>
+        <div class="header-actions">
+          <button class="reset-filters" onclick="resetFilters()">
+            <i class="fas fa-undo"></i> Réinitialiser
+          </button>
+        </div>
+      </div>
+      
+      <div class="filters-grid">
+        <!-- Platform Filter -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-laptop"></i> Plateformes
+          </label>
+          <div class="platform-toggles">
+            <label class="platform-toggle active" data-platform="epic">
+              <input type="checkbox" checked>
+              <span class="platform-icon epic"><i class="fas fa-shopping-cart"></i></span>
+              <span class="platform-name">Epic Games</span>
+            </label>
+            <label class="platform-toggle active" data-platform="steam">
+              <input type="checkbox" checked>
+              <span class="platform-icon steam"><i class="fab fa-steam"></i></span>
+              <span class="platform-name">Steam</span>
+            </label>
+            <label class="platform-toggle active" data-platform="gog">
+              <input type="checkbox" checked>
+              <span class="platform-icon gog"><i class="fas fa-compact-disc"></i></span>
+              <span class="platform-name">GOG</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Discount Filter -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-percentage"></i> Réduction minimale
+          </label>
+          <div class="discount-slider">
+            <input type="range" id="discount-range" min="0" max="100" value="0" step="10">
+            <div class="discount-labels">
+              <span>0%</span>
+              <span id="discount-value">0%</span>
+              <span>100%</span>
+            </div>
+          </div>
+          <div class="discount-presets">
+            <button class="preset-btn active" data-discount="0">Toutes</button>
+            <button class="preset-btn" data-discount="50">-50%+</button>
+            <button class="preset-btn" data-discount="70">-70%+</button>
+            <button class="preset-btn" data-discount="90">-90%+</button>
+            <button class="preset-btn" data-discount="100">Gratuits</button>
+          </div>
+        </div>
+
+        <!-- Year Filter -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-calendar-alt"></i> Année de sortie
+          </label>
+          <select id="year-filter" class="year-select">
+            <option value="">Toutes les années</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+            <option value="2020">2020</option>
+            <option value="2019">2019</option>
+            <option value="2018">2018</option>
+            <option value="2017">2017</option>
+            <option value="2016">2016</option>
+            <option value="2015">2015</option>
+            <option value="older">Avant 2015</option>
+          </select>
+        </div>
+
+        <!-- Sort Options -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-sort"></i> Trier par
+          </label>
+          <select id="sort-select" class="sort-select">
+            <option value="discount-desc">Réduction (décroissant)</option>
+            <option value="discount-asc">Réduction (croissant)</option>
+            <option value="price-asc">Prix (croissant)</option>
+            <option value="price-desc">Prix (décroissant)</option>
+            <option value="name-asc">Nom (A-Z)</option>
+            <option value="name-desc">Nom (Z-A)</option>
+            <option value="year-desc">Année (récent d'abord)</option>
+            <option value="year-asc">Année (ancien d'abord)</option>
+            <option value="platform">Plateforme</option>
+          </select>
+        </div>
+
+        <!-- Search -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-search"></i> Rechercher
+          </label>
+          <div class="search-input">
+            <input type="text" id="search-input" placeholder="Nom du jeu...">
+            <button class="search-clear" onclick="clearSearch()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Games Grid -->
+  <section class="games-section">
+    <div class="games-container">
+      <div class="games-header">
+        <h2 id="results-title">Tous les jeux</h2>
+        <div class="view-toggle">
+          <button class="view-btn active" data-view="grid" title="Vue grille">
+            <i class="fas fa-th"></i>
+          </button>
+          <button class="view-btn" data-view="list" title="Vue liste">
+            <i class="fas fa-list"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div id="loading-spinner" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Chargement des jeux...</p>
+      </div>
+
+      <div id="games-grid" class="games-grid">
+        <!-- Games will be inserted here -->
+      </div>
+
+      <div id="no-results" class="no-results" style="display: none;">
+        <i class="fas fa-search"></i>
+        <h3>Aucun jeu trouvé</h3>
+        <p>Essayez de modifier vos filtres ou votre recherche</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3><i class="fas fa-code"></i> API pour développeurs</h3>
+        <p>Intégrez nos données dans vos projets</p>
+        <div class="api-endpoints">
+          <code>/api/free-games?discount=100</code>
+          <code>/api/free-games?platforms=steam,epic</code>
+          <code>/api/free-games?discount=70&platforms=gog</code>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h3><i class="fas fa-info-circle"></i> À propos</h3>
+        <p>Free Games API agrège les meilleures offres gaming en temps réel depuis Epic Games, Steam et GOG.</p>
+        <div class="footer-links">
+          <a href="#" onclick="showAbout()">En savoir plus</a>
+          <a href="#" onclick="showHelp()">Aide</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Free Games API - Données mises à jour en temps réel</p>
+    </div>
+  </footer>
+
+  <!-- Modals -->
+  <div id="game-modal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal()">&times;</span>
+      <div id="modal-body">
+        <!-- Game details will be inserted here -->
+      </div>
+    </div>
+  </div>
+  <!-- Scripts -->
+  <script src="steamImageService.js"></script>
+  <script src="modern-app.js"></script>
+</body>
 </html>
