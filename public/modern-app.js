@@ -54,12 +54,13 @@ function updateStats(games) {
   animateNumber(document.getElementById('promoGames'), promoGames.length);
 }
 
-// Fonction pour obtenir les plateformes sélectionnées
+// Fonction pour obtenir les plateformes sélectionnées - corrigée
 function getSelectedPlatforms() {
   const platforms = [];
-  document.querySelectorAll('.platform-toggle.active input:checked').forEach(input => {
-    platforms.push(input.closest('.platform-toggle').dataset.platform);
+  document.querySelectorAll('.platform-toggle.active').forEach(toggle => {
+    platforms.push(toggle.dataset.platform);
   });
+  console.log('🔍 Plateformes sélectionnées:', platforms);
   return platforms.length > 0 ? platforms : ['epic', 'steam', 'gog'];
 }
 
@@ -104,7 +105,7 @@ async function loadGames() {
   }
 }
 
-// Fonction pour afficher les jeux - avec tri et filtrage correct
+// Fonction pour afficher les jeux - avec filtrage par plateforme corrigé
 function displayGames(games) {
   const gamesGrid = document.getElementById('games-grid');
   const noResults = document.getElementById('no-results');
@@ -112,7 +113,18 @@ function displayGames(games) {
   // Filtrer pour ne montrer que les jeux en promotion (discount > 0%)
   let filteredGames = games.filter(game => {
     const discount = parseInt(game.discountPercent || game.discount || 0);
-    return discount > 0; // Inclut les gratuits (100%) et les promotions (1-99%)
+    return discount > 0;
+  });
+  
+  // Appliquer le filtre de plateforme
+  const selectedPlatforms = getSelectedPlatforms();
+  filteredGames = filteredGames.filter(game => {
+    const gamePlatform = game.platform || 'unknown';
+    const isIncluded = selectedPlatforms.includes(gamePlatform);
+    if (!isIncluded) {
+      console.log(`❌ Jeu "${game.game || game.title}" (${gamePlatform}) exclu - plateformes: [${selectedPlatforms.join(',')}]`);
+    }
+    return isIncluded;
   });
   
   // Appliquer le filtre de réduction minimale
@@ -128,135 +140,7 @@ function displayGames(games) {
   const sortBy = document.getElementById('sort-select')?.value || 'discount-desc';
   filteredGames = sortGames(filteredGames, sortBy);
   
-  console.log(`📊 Jeux filtrés: ${filteredGames.length}/${games.length} (promotions ≥${minDiscount}%, triés par ${sortBy})`);
-  
-  if (filteredGames.length === 0) {
-    gamesGrid.style.display = 'none';
-    noResults.style.display = 'flex';
-    return;
-  }
-  
-  noResults.style.display = 'none';
-  gamesGrid.style.display = 'grid';
-  
-  gamesGrid.innerHTML = filteredGames.map(game => createGameCard(game)).join('');
-  
-  // Mettre à jour le titre des résultats
-  updateResultsTitle(filteredGames.length);
-}
-
-// Fonction pour trier les jeux
-function sortGames(games, sortBy) {
-  return games.sort((a, b) => {
-    const aDiscount = parseInt(a.discountPercent || a.discount || 0);
-    const bDiscount = parseInt(b.discountPercent || b.discount || 0);
-    const aPrice = parseFloat(a.discountPrice || a.currentPrice || a.price || 0);
-    const bPrice = parseFloat(b.discountPrice || b.currentPrice || b.price || 0);
-    const aOriginalPrice = parseFloat(a.originalPrice || a.regularPrice || 0);
-    const bOriginalPrice = parseFloat(b.originalPrice || b.regularPrice || 0);
-    const aName = (a.game || a.title || '').toLowerCase();
-    const bName = (b.game || b.title || '').toLowerCase();
-    
-    switch (sortBy) {
-      case 'discount-desc': 
-        return bDiscount - aDiscount; // Plus grosse réduction d'abord
-      case 'discount-asc': 
-        return aDiscount - bDiscount; // Plus petite réduction d'abord
-      case 'price-desc': 
-        return bPrice - aPrice; // Prix le plus cher d'abord
-      case 'price-asc': 
-        return aPrice - bPrice; // Prix le moins cher d'abord
-      case 'name-asc': 
-        return aName.localeCompare(bName); // A-Z
-      case 'name-desc': 
-        return bName.localeCompare(aName); // Z-A
-      case 'platform': 
-        return a.platform.localeCompare(b.platform); // Par plateforme
-      case 'year-desc': 
-        return (b.releaseYear || 0) - (a.releaseYear || 0); // Plus récent d'abord
-      case 'year-asc': 
-        return (a.releaseYear || 0) - (b.releaseYear || 0); // Plus ancien d'abord
-      default: 
-        return bDiscount - aDiscount; // Par défaut: réduction décroissante
-    }
-  });
-}
-
-// Fonction pour obtenir les plateformes sélectionnées
-function getSelectedPlatforms() {
-  const platforms = [];
-  document.querySelectorAll('.platform-toggle.active input:checked').forEach(input => {
-    platforms.push(input.closest('.platform-toggle').dataset.platform);
-  });
-  return platforms.length > 0 ? platforms : ['epic', 'steam', 'gog'];
-}
-
-// Fonction pour obtenir la réduction sélectionnée
-function getSelectedDiscount() {
-  const discountRange = document.getElementById('discount-range');
-  return discountRange ? parseInt(discountRange.value) : 0;
-}
-
-// Fonction pour charger les jeux
-async function loadGames() {
-  try {
-    showLoading(true);
-    
-    const platforms = getSelectedPlatforms();
-    const discount = getSelectedDiscount();
-    
-    console.log('🔄 Chargement des jeux avec filtres:', { platforms, discount });
-    
-    const response = await fetch(`/api/free-games?platforms=${platforms.join(',')}&discount=${discount}`);
-    
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    console.log('📦 Données reçues:', data.length, 'jeux');
-    
-    currentGames = data;
-    
-    // Mettre à jour les statistiques
-    updateStats(data);
-    
-    // Afficher les jeux
-    displayGames(data);
-    
-  } catch (error) {
-    console.error('❌ Erreur lors du chargement:', error);
-    showError('Erreur lors du chargement des jeux');
-  } finally {
-    showLoading(false);
-  }
-}
-
-// Fonction pour afficher les jeux - avec tri et filtrage correct
-function displayGames(games) {
-  const gamesGrid = document.getElementById('games-grid');
-  const noResults = document.getElementById('no-results');
-  
-  // Filtrer pour ne montrer que les jeux en promotion (discount > 0%)
-  let filteredGames = games.filter(game => {
-    const discount = parseInt(game.discountPercent || game.discount || 0);
-    return discount > 0; // Inclut les gratuits (100%) et les promotions (1-99%)
-  });
-  
-  // Appliquer le filtre de réduction minimale
-  const minDiscount = getSelectedDiscount();
-  if (minDiscount > 0) {
-    filteredGames = filteredGames.filter(game => {
-      const discount = parseInt(game.discountPercent || game.discount || 0);
-      return discount >= minDiscount;
-    });
-  }
-  
-  // Appliquer le tri
-  const sortBy = document.getElementById('sort-select')?.value || 'discount-desc';
-  filteredGames = sortGames(filteredGames, sortBy);
-  
-  console.log(`📊 Jeux filtrés: ${filteredGames.length}/${games.length} (promotions ≥${minDiscount}%, triés par ${sortBy})`);
+  console.log(`📊 Jeux filtrés: ${filteredGames.length}/${games.length} (plateformes: ${selectedPlatforms.join(',')}, réduction ≥${minDiscount}%)`);
   
   if (filteredGames.length === 0) {
     gamesGrid.style.display = 'none';
@@ -550,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeFilters();
 });
 
-// Fonction pour initialiser les filtres - utiliser filterGames au lieu de loadGames
+// Fonction pour initialiser les filtres - corrigée
 function initializeFilters() {
   // Slider de réduction
   const discountRange = document.getElementById('discount-range');
@@ -559,16 +443,45 @@ function initializeFilters() {
       document.getElementById('discount-value').textContent = this.value + '%';
     });
     
-    discountRange.addEventListener('change', filterGames); // Changé: filterGames au lieu de loadGames
+    discountRange.addEventListener('change', filterGames);
   }
   
-  // Toggles de plateforme
+  // Toggles de plateforme - logique corrigée
   document.querySelectorAll('.platform-toggle').forEach(toggle => {
-    toggle.addEventListener('click', function() {
+    console.log('🔧 Initialisation bouton plateforme:', toggle.dataset.platform);
+    
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log(`🖱️ Clic sur plateforme ${this.dataset.platform}`);
+      
+      // Toggle de l'état actif
       this.classList.toggle('active');
-      const input = this.querySelector('input');
-      input.checked = this.classList.contains('active');
-      filterGames(); // Changé: filterGames au lieu de loadGames
+      
+      // Mettre à jour la checkbox
+      const checkbox = this.querySelector('input[type="checkbox"]');
+      if (checkbox) {
+        checkbox.checked = this.classList.contains('active');
+      }
+      
+      // Vérifier qu'au moins une plateforme reste sélectionnée
+      const activePlatforms = document.querySelectorAll('.platform-toggle.active');
+      if (activePlatforms.length === 0) {
+        // Forcer à garder cette plateforme active
+        this.classList.add('active');
+        if (checkbox) checkbox.checked = true;
+        console.log('⚠️ Au moins une plateforme doit rester sélectionnée');
+        return;
+      }
+      
+      const isActive = this.classList.contains('active');
+      console.log(`📱 Plateforme ${this.dataset.platform}: ${isActive ? 'ACTIVÉE' : 'DÉSACTIVÉE'}`);
+      
+      // Appliquer le filtrage immédiatement
+      setTimeout(() => {
+        filterGames();
+      }, 50);
     });
   });
   
@@ -584,7 +497,7 @@ function initializeFilters() {
         document.getElementById('discount-value').textContent = discount + '%';
       }
       
-      filterGames(); // Changé: filterGames au lieu de loadGames
+      filterGames();
     });
   });
   
@@ -605,12 +518,14 @@ function initializeFilters() {
   const sortSelect = document.getElementById('sort-select');
   
   if (yearFilter) {
-    yearFilter.addEventListener('change', filterGames); // Changé: filterGames
+    yearFilter.addEventListener('change', filterGames);
   }
   
   if (sortSelect) {
-    sortSelect.addEventListener('change', filterGames); // Changé: filterGames
+    sortSelect.addEventListener('change', filterGames);
   }
+  
+  console.log('✅ Filtres initialisés');
 }
 
 // Fonction pour appliquer le filtre de recherche

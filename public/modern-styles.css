@@ -275,103 +275,78 @@ body {
   margin-bottom: var(--space-md);
 }
 
-/* Platform Toggles - Style amélioré avec feedback visuel clair */
+/* Platform Toggles - Style avec fond transparent */
 .platform-toggles {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .platform-toggle {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
-  border: 2px solid transparent;
-  border-radius: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 120px;
-  justify-content: center;
+  transition: all 0.2s ease;
   user-select: none;
-  position: relative;
-  overflow: hidden;
+  width: 100%;
 }
 
 .platform-toggle input[type="checkbox"] {
   display: none;
 }
 
-/* État ACTIF (sélectionné) - style brillant */
+.platform-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.platform-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  flex-grow: 1;
+}
+
+/* État ACTIF (sélectionné) - bleu */
 .platform-toggle.active {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
-  border-color: #667eea;
-  box-shadow: 
-    0 4px 20px rgba(102, 126, 234, 0.4),
-    0 0 30px rgba(102, 126, 234, 0.2);
-  transform: translateY(-2px);
-}
-
-.platform-toggle.active::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  animation: shine 2s infinite;
-}
-
-@keyframes shine {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
-.platform-toggle.active .platform-name {
-  color: #ffffff;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
 }
 
 .platform-toggle.active .platform-icon {
-  opacity: 1;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  color: white;
 }
 
-/* État INACTIF (désélectionné) - style gris terne */
+.platform-toggle.active .platform-name {
+  color: white;
+}
+
+/* État INACTIF (désélectionné) - fond transparent avec bordure visible */
 .platform-toggle:not(.active) {
-  background: #2a2d3a;
-  border-color: #3a3d4a;
-  box-shadow: none;
-  transform: none;
-}
-
-.platform-toggle:not(.active) .platform-name {
-  color: #6b7280;
-  font-weight: 400;
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-light);
 }
 
 .platform-toggle:not(.active) .platform-icon {
-  opacity: 0.5;
-  filter: grayscale(100%);
+  color: var(--text-light);
+}
+
+.platform-toggle:not(.active) .platform-name {
+  color: var(--text-light);
 }
 
 /* Hover states */
 .platform-toggle:hover {
-  transform: translateY(-1px);
-}
-
-.platform-toggle.active:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 6px 25px rgba(102, 126, 234, 0.5),
-    0 0 40px rgba(102, 126, 234, 0.3);
-}
-
-.platform-toggle:not(.active):hover {
-  background: #353843;
-  border-color: #4a4d5a;
+  opacity: 0.9;
 }
 
 /* Style pour les badges de plateforme avec vrais logos */
@@ -658,7 +633,7 @@ body {
   }
 }
 
-/* Game Cards - ajuster les proportions */
+/* Game Cards - dimensions ajustées pour ratio 342x482 */
 .game-card {
   background: var(--card-bg);
   border-radius: 16px;
@@ -669,15 +644,15 @@ body {
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  height: 500px; /* Augmenté de 450px à 500px */
+  height: 650px; /* Augmenté pour accommoder l'image plus grande */
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Game Image - plus d'espace pour l'image */
+/* Game Image - ratio 342x482 (environ 1:1.4) */
 .game-image {
   position: relative;
   width: 100%;
-  height: 300px; /* Augmenté de 200px à 300px */
+  height: 420px; /* Augmenté pour le bon ratio */
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -737,7 +712,7 @@ body {
 
 /* Game Info */
 .game-info {
-  padding: 1rem; /* Réduit de 1.5rem à 1rem */
+  padding: 1.2rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -745,25 +720,25 @@ body {
 }
 
 .game-title {
-  font-size: 1rem; /* Légèrement réduit de 1.1rem */
+  font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 0.4rem; /* Réduit de 0.5rem */
+  margin-bottom: 0.5rem;
   color: var(--text-primary);
-  line-height: 1.2; /* Réduit de 1.3 */
+  line-height: 1.2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 2.4em; /* Réduit pour correspondre au line-height */
+  height: 2.4em;
 }
 
 /* Game Meta */
 .game-meta {
   display: flex;
-  gap: 0.4rem; /* Réduit de 0.5rem */
-  margin-bottom: 0.8rem; /* Réduit de 1rem */
+  gap: 0.5rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
-  min-height: 1.2em; /* Réduit de 1.5em */
+  min-height: 1.5em;
 }
 
 .release-year, .genre {
@@ -776,8 +751,8 @@ body {
 }
 
 .game-price {
-  margin-bottom: 0.8rem; /* Réduit de 1rem */
-  min-height: 1.2em; /* Réduit de 1.5em */
+  margin-bottom: 1rem;
+  min-height: 2em;
 }
 
 .price-container {
