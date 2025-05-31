@@ -1,178 +1,147 @@
-# Free Games API - Version Améliorée
+# 🎮 Free Games API
 
-API moderne pour récupérer les jeux gratuits et en promotion sur Epic Games, Steam et GOG avec interface web élégante.
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.x-blue?style=for-the-badge&logo=express)](https://expressjs.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![API Status](https://img.shields.io/badge/API-Live-success?style=for-the-badge)](http://localhost:3000)
 
-## 🚀 Fonctionnalités
+**API moderne et interface web pour découvrir les meilleures promotions gaming** sur Epic Games, Steam et GOG.
 
-### ✅ Corrections Appliquées
-- **Tri strict des promotions** : Les jeux à -75%/-89% n'apparaissent plus dans les gratuits
-- **Amélioration Steam** : Récupération multi-sources (API + scraping de secours)
-- **GOG enrichi** : Images et prix disponibles pour les jeux GOG
-- **Squelettes de chargement** : Remplacement du spinner par des skeleton cards modernes
-- **Filtrage précis** : Séparation stricte entre jeux gratuits (100%) et promotions
+![Demo](https://img.shields.io/badge/🎯-Promotions%20en%20temps%20réel-blueviolet?style=flat-square)
+![Demo](https://img.shields.io/badge/🎨-Interface%20moderne-ff69b4?style=flat-square)
+![Demo](https://img.shields.io/badge/📱-Responsive%20design-orange?style=flat-square)
 
-### 🎮 Plateformes Supportées
-- **Epic Games Store** : Jeux gratuits hebdomadaires + promotions
-- **Steam** : Jeux gratuits + promotions (API + scraping)
-- **GOG** : Jeux gratuits + promotions avec images et prix
+## ⚡ Démarrage Rapide
+
+```bash
+# Installation
+git clone <repository-url>
+cd free-games-api
+npm install
+
+# Lancement
+npm start
+```
+
+🌐 **Interface Web** : http://localhost:3000  
+🔗 **API Endpoint** : http://localhost:3000/api/free-games
+
+## 🎯 Fonctionnalités Principales
+
+### 🏪 Plateformes Supportées
+| Plateforme | Gratuits | Promotions | Images |
+|------------|----------|------------|--------|
+| ![Epic](https://img.shields.io/badge/Epic%20Games-0078D4?style=flat&logo=epicgames&logoColor=white) | ✅ | ✅ | ✅ |
+| ![Steam](https://img.shields.io/badge/Steam-000000?style=flat&logo=steam&logoColor=white) | ✅ | ✅ | ✅ |
+| ![GOG](https://img.shields.io/badge/GOG-86328A?style=flat&logo=gog.com&logoColor=white) | ✅ | ✅ | ✅ |
 
 ### 🎨 Interface Moderne
-- Design sombre élégant avec thème violet/bleu
-- Cartes de jeux avec images, prix et réductions
-- Squelettes de chargement fluides
-- Interface responsive (mobile-friendly)
-- Animations et effets hover
+- 🌙 **Design sombre** avec thème violet/bleu
+- 📱 **Responsive** - optimisé mobile
+- ⚡ **Filtrage temps réel** par plateforme et réduction
+- 🎯 **Tri intelligent** par réduction décroissante
+- 💎 **Cartes élégantes** avec prix et économies
 
 ## 📊 API Endpoints
 
-### Jeux Gratuits
-```
-GET /games?discount=free
-GET /games?discount=100
-```
-Retourne uniquement les jeux avec 100% de réduction (gratuits).
-
-### Promotions
-```
-GET /games?discount=50
-GET /games?discount=70
-```
-Retourne les jeux avec au moins X% de réduction (excluant les gratuits).
-
-### Promotions Exactes
-```
-GET /games?discount=50&mustSame=true
-```
-Retourne uniquement les jeux avec exactement X% de réduction.
-
-## 🛠️ Installation
-
-1. **Cloner le repository**
-```bash
-git clone <repository-url>
-cd free-games-api
+### Récupérer toutes les promotions
+```http
+GET /api/free-games
 ```
 
-2. **Installer les dépendances**
-```bash
-npm install
+### Filtrer par réduction minimale
+```http
+GET /api/free-games?discount=50    # Au moins -50%
+GET /api/free-games?discount=100   # Gratuits seulement
 ```
 
-3. **Démarrer le serveur**
-```bash
-npm start
-# ou
-node index.js
+### Filtrer par plateformes
+```http
+GET /api/free-games?platforms=steam,epic
+GET /api/free-games?platforms=gog&discount=70
 ```
 
-4. **Accéder à l'interface**
-- Interface web : http://localhost:3000
-- API : http://localhost:3000/games
+### Réponse JSON
+```json
+{
+  "game": "Cyberpunk 2077",
+  "platform": "steam", 
+  "discountPrice": 15.99,
+  "originalPrice": 59.99,
+  "discountPercent": 73,
+  "url": "https://store.steampowered.com/app/1091500",
+  "image": "https://cdn.akamai.steamstatic.com/..."
+}
+```
 
-## 🔧 Structure du Projet
+## 🏗️ Structure Technique
 
 ```
 free-games-api/
-├── index.js                 # Serveur Express principal
-├── routes/
-│   └── FreeGamesController.js # Contrôleur avec filtrage strict
-├── fetch/
-│   ├── getFreeGames.js      # Récupération jeux gratuits (100%)
-│   └── getDiscountedGames.js # Récupération promotions
-├── public/
-│   ├── index.html           # Page d'accueil moderne
-│   ├── games.html           # Page liste des jeux
-│   ├── games-script.js      # JavaScript avec squelettes
-│   ├── games.css           # Styles modernes
-│   ├── skeleton.css        # Styles squelettes de chargement
-│   └── index.css           # Styles page d'accueil
-└── test-corrections.js      # Script de test des corrections
+├── 🚀 index.js                     # Serveur Express
+├── 📁 routes/
+│   └── FreeGamesController.js       # API Controller
+├── 📁 fetch/
+│   └── getGames.js                  # Récupération données
+└── 📁 public/
+    ├── index.html                   # Interface principale
+    ├── modern-app.js               # JavaScript app
+    └── modern-styles.css           # Styles modernes
 ```
 
-## 🐛 Corrections Techniques
+## 🔧 Technologies
 
-### Problème 1 : Jeux en promotion dans les gratuits
-**Avant** : Les jeux à -75% apparaissaient dans la section gratuits
-**Après** : Filtrage strict avec vérification du prix final = 0
+![Tech Stack](https://skillicons.dev/icons?i=nodejs,express,html,css,js)
 
-### Problème 2 : Steam ne retournait aucun jeu
-**Avant** : Une seule source API parfois indisponible
-**Après** : Multi-sources avec fallback + meilleure gestion d'erreurs
+- **Backend** : Node.js + Express
+- **Frontend** : HTML5 + CSS3 + JavaScript
+- **APIs** : Epic Games, Steam, GOG
+- **Design** : CSS Grid + Flexbox + Animations
 
-### Problème 3 : GOG sans images ni prix
-**Avant** : Données basiques uniquement
-**Après** : Appels API détaillés pour récupérer images et prix
+## 🚀 Déploiement
 
-### Problème 4 : Spinner de chargement basique
-**Avant** : Simple spinner
-**Après** : Squelettes de chargement réalistes avec animations
-
-## 🎯 Logique de Filtrage
-
-### Jeux Gratuits (discount=free ou discount=100)
-```javascript
-// Critères stricts
-discountPercent === 100 ||
-discountPrice === 0 ||
-price === 0
-```
-
-### Promotions (discount=X, X < 100)
-```javascript
-// Si mustSame=true
-discountPercent === X
-
-// Si mustSame=false (défaut)
-discountPercent >= X && discountPercent < 100
-```
-
-## 🚀 Améliorations UI/UX
-
-### Squelettes de Chargement
-- 8 cartes skeleton pendant le chargement
-- Animation de shimmer réaliste
-- Même structure que les vraies cartes
-
-### Cartes de Jeux Enrichies
-- Images haute qualité
-- Prix actuel et prix barré
-- Badge de réduction coloré
-- Économies calculées
-- Liens vers les stores
-
-### Design Responsive
-- Grille adaptive (350px minimum par carte)
-- Mobile-first approach
-- Animations fluides
-
-## 🔍 Tests et Validation
-
-Exécuter le script de test :
+### Local
 ```bash
-node test-corrections.js
+npm start
+# → http://localhost:3000
 ```
 
-Ce script vérifie :
-- Aucun jeu en promotion dans les gratuits
-- Aucun jeu gratuit dans les promotions
-- Cohérence des pourcentages de réduction
+### Production
+```bash
+# Variables d'environnement
+PORT=3000
+NODE_ENV=production
 
-## 📱 Utilisation
+# PM2 (recommandé)
+npm install -g pm2
+pm2 start index.js --name "free-games-api"
+```
 
-1. **Page d'accueil** : Navigation claire vers chaque section
-2. **Jeux gratuits** : Cliquer sur "Jeux Gratuits"
-3. **Promotions** : Choisir le pourcentage souhaité (-100%, -70%, -50%)
-4. **Chargement** : Squelettes animés pendant la récupération
-5. **Navigation** : Liens directs vers les stores
+## 📈 Performance
 
-## 🔮 Prochaines Améliorations
+- ⚡ **Cache intelligent** des requêtes API
+- 🔄 **Requêtes parallèles** multi-plateformes  
+- 📱 **Images optimisées** avec fallbacks
+- 🎯 **Filtrage côté client** pour réactivité
 
-- [ ] Cache Redis pour optimiser les performances
-- [ ] Notifications push pour nouveaux jeux gratuits
-- [ ] Filtres par genre/plateforme
-- [ ] Historique des prix
-- [ ] API key pour limiter l'usage
+## 🤝 Contribution
+
+1. **Fork** le projet
+2. **Branch** feature (`git checkout -b feature/amazing`)
+3. **Commit** (`git commit -m 'Add amazing feature'`)
+4. **Push** (`git push origin feature/amazing`)
+5. **Pull Request**
 
 ## 📄 License
 
-MIT License - Voir le fichier LICENSE pour plus de détails.
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+
+---
+
+<div align="center">
+
+**[🌟 Star ce projet](../../stargazers)** • **[🐛 Report Bug](../../issues)** • **[💡 Request Feature](../../issues)**
+
+Made with ❤️ for gamers by gamers
+
+</div>
